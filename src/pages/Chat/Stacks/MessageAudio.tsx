@@ -15,6 +15,7 @@ import moment from 'moment'
 import { useTiming, defineAnimation, withBouncing, } from "react-native-redash";
 import md5 from 'md5'
 import RNFS from "react-native-fs"
+// import soundPlayer from "react-native-sound-player"
 // components
 
 function MessageAudio(props: any) {
@@ -86,6 +87,9 @@ function MessageAudio(props: any) {
 
     if (!isPlaying) {
       setIsPlaying(true)
+
+      // soundPlayer.playUrl(localFile, props.type.split("/")[1])
+      // soundPlayer.play()
 
       sound.play((success: boolean) => {
         console.log("sound success", success)

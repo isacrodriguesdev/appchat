@@ -54,63 +54,62 @@ interface ListMessagesProps {
   pageOffset: number
 }
 
-const ListMessages = memo(
-  function (props: ListMessagesProps) {
+function ListMessages (props: ListMessagesProps) {
 
-    const allowedToPullMessages = useMemo(() => !props.loadingStart && !props.loadingProcess && props.messages.length > props.pageLimit, [
-      props.loadingStart,
-      props.loadingProcess,
-      props.messages
-    ])
+  const allowedToPullMessages = useMemo(() => !props.loadingStart && !props.loadingProcess && props.messages.length > props.pageLimit, [
+    props.loadingStart,
+    props.loadingProcess,
+    props.messages
+  ])
 
-    return (
-      <FlatList
-        removeClippedSubviews={true}
-        initialNumToRender={10}
-        ref={props.refChatView}
-        showsVerticalScrollIndicator={false}
-        inverted
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={() => {
-          return props.loadingProcess ? (
-            <View style={{ zIndex: 1000, top: 15 }}>
-              <Indicators.MaterialIndicator size={25} color={colors.primaryColor} />
-            </View>
-          ) : null
-        }}
-        onEndReached={() => {
-          if (allowedToPullMessages) {
-            props.setPageOffset((prevState: number) => prevState + 10)
-            props.updateLoadMessages({
-              contact_id: props.participant.contact_id,
-              attendment_id: props.participant.id,
-              page_limit: props.pageLimit,
-              page_offset: props.pageOffset
-            })
+  return (
+    <FlatList
+      removeClippedSubviews={true}
+      initialNumToRender={10}
+      ref={props.refChatView}
+      showsVerticalScrollIndicator={false}
+      inverted
+      onEndReachedThreshold={0.5}
+      ListFooterComponent={() => {
+        return props.loadingProcess ? (
+          <View style={{ zIndex: 1000, top: 15 }}>
+            <Indicators.MaterialIndicator size={25} color={colors.primaryColor} />
+          </View>
+        ) : null
+      }}
+      onEndReached={() => {
+        if (allowedToPullMessages) {
+          props.setPageOffset((prevState: number) => prevState + 10)
+          props.updateLoadMessages({
+            contact_id: props.participant.contact_id,
+            attendment_id: props.participant.id,
+            page_limit: props.pageLimit,
+            page_offset: props.pageOffset
+          })
+        }
+      }}
+      style={styles.messagesContainer}
+      data={props.messages}
+      keyExtractor={(_, index) => index.toString()}
+      renderItem={({ item }) => {
+        if (props.participant.channel === item.channel) {
+          item = {
+            ...item,
+            participant: props.participant,
+            received: item.sender !== "client"
           }
-        }}
-        style={styles.messagesContainer}
-        data={props.messages}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={({ item }) => {
-          if (props.participant.channel === item.channel) {
-            item = {
-              ...item,
-              participant: props.participant,
-              received: item.sender !== "client"
-            }
 
-            if (item.message === "@response_close_attendance@")
-              return <Message {...item} notice="closed" message="Atendimento concluído" />
-            else
-              return <Message {...item} />
-          }
-          else return null
-        }}
-      />
-    )
-  }
-)
+          if (item.message === "@closed_attendment@")
+            return <Message {...item} notice="closed" message="Atendimento concluído" />
+          else
+            return <Message {...item} />
+        }
+        else return null
+      }}
+    />
+  )
+}
+
 
 function Chat(props: Props) {
 

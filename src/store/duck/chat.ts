@@ -25,6 +25,7 @@ export default function reducer(state = initialState, action: Action) {
           if (message.hash === action.payload.hash) {
             return { ...action.payload, sending: false }
           }
+          
           return message
         }),
         loadingStart: false,

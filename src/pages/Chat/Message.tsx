@@ -9,10 +9,12 @@ import MessageDocument from './Stacks/MessageDocument';
 
 interface Props {
   type: string
+  file: string
 }
 
 export default function Message(props: Props) {
 
+  console.log(props.file)
 
   if (props.type === "chat")
     return <MessageText {...props} />
