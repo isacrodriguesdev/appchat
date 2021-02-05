@@ -1,111 +1,88 @@
 import React, { useEffect, useState, useRef, memo, useMemo, useCallback, Fragment } from 'react'
 import { View, TouchableOpacity, Text, Image, ViewProps, StyleProp, ViewStyle } from 'react-native'
 // import fs from "react-native-fs"
-import Sound from 'react-native-sound'
 // imports
 import styles from '../styles'
 import PlayIcon from "~/components/icons/Play"
 import PauseIcon from "~/components/icons/Pause"
 import colors from '../../../../theme'
 import DateText from '~/components/DateText.tsx'
-import Animated, { Easing, sub, Value, clockRunning, useCode, cond, set, timing, startClock, not, useValue } from 'react-native-reanimated'
+import Animated, { Easing, sub, Value } from 'react-native-reanimated'
 import font from '../../../app/font'
 import Loading from '~/components/Loading'
 import moment from 'moment'
-import { useTiming, defineAnimation, withBouncing, } from "react-native-redash";
 import md5 from 'md5'
 import RNFS from "react-native-fs"
-// import soundPlayer from "react-native-sound-player"
+import { Player, Recorder } from "@react-native-community/audio-toolkit"
 // components
 
 function MessageAudio(props: any) {
 
-  // let soundPlayer = new Sound(props.file, undefined)
-  let audio: any = null
+  let player: Player
+  let localFile = `${RNFS.DocumentDirectoryPath}/${md5(props.id)}.${props.type.split("/")[1]}`
 
-  const [localFile, setLocalFile] = useState<string>(
-    `${RNFS.DocumentDirectoryPath}/${md5(props.id)}.${props.type.split("/")[1]}`
-  )
   const [currentTime, setCurrentTime] = useState(props.file_duration)
-  const [sound, setSound] = useState<any>(null)
   const [width, setWidth] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const animatedValue = useRef(new Value(0)).current
 
-  useEffect(() => {
-    setCurrentTime(props.file_duration)
-  }, [props.file_duration])
-
-  useEffect(() => {
-    setLocalFile(`${RNFS.DocumentDirectoryPath}/${md5(props.id)}.${props.type.split("/")[1]}`)
-  }, [props.id])
-
+  // sera que era por causa do hash?
   useEffect(() => {
     downloadFile()
-  }, [props.file])
+  }, [props.id, props.file, props.file_duration, props.hash])
 
   async function downloadFile() {
     const exists = await RNFS.exists(localFile)
 
     if (!exists) {
-      setSound(loadAudioFile())
       await RNFS.downloadFile({ fromUrl: props.file, toFile: localFile }).promise
-      setLocalFile(localFile)
-    } else {
-      setSound(loadAudioFile())
-      setLocalFile(localFile)
     }
   }
 
-  function eventGetCurrentTime(audio: any) {
-    audio.getCurrentTime((seconds: number, playing: boolean) => {
-      if (playing) {
+  function getCurrentTime(paused: boolean) {
 
-        Animated.timing(animatedValue, {
-          duration: 200,
-          toValue: (Math.floor(seconds * 100) / (props.file_duration * 100)) * 100,
-          easing: Easing.inOut(Easing.linear),
-        }).start(() => {
-          setCurrentTime(seconds)
-          eventGetCurrentTime(audio)
-        })
-      }
+    console.log("paused ===", paused)
 
-    })
-  }
+    if (paused) return
 
-  function loadAudioFile() {
-    return new Sound(localFile, Sound.LIBRARY, (error) => {
-      console.log("status", error)
-      if (error) {
-        console.log(error)
-      }
-    })
-  }
-
-  const eventAudio = async function () {
-
-    if (!isPlaying) {
-      setIsPlaying(true)
-
-      // soundPlayer.playUrl(localFile, props.type.split("/")[1])
-      // soundPlayer.play()
-
-      sound.play((success: boolean) => {
-        console.log("sound success", success)
-        sound.stop(() => {
-          setSound(loadAudioFile())
-          animatedValue.setValue(0)
-          setCurrentTime(props.file_duration)
-          setIsPlaying(false)
-        })
-      })
-      eventGetCurrentTime(sound)
-
-    } else {
-      sound.pause()
+    if (player.isStopped === true) {
+      console.log("terminei", paused, player.isStopped)
+      animatedValue.setValue(0)
+      setCurrentTime(props.file_duration)
       setIsPlaying(false)
+      setPlayer()
+      return
     }
+
+    // console.log("iniciei", paused, player.isStopped)
+
+    let seconds = Math.floor(player.currentTime / 1000)
+
+    Animated.timing(animatedValue, {
+      duration: 300,
+      toValue: ((seconds * 100) / (props.file_duration * 100)) * 100,
+      easing: Easing.linear,
+    }).start(() => {
+      setCurrentTime(seconds)
+      getCurrentTime(paused)
+    })
+  }
+
+  function setPlayer() {
+    player = new Player(localFile)
+  }
+
+  function playPause() {
+
+    if (!player)
+      setPlayer()
+
+    player.playPause((error, paused) => {
+      console.log(error, paused)
+      getCurrentTime(paused)
+      setIsPlaying(!paused)
+    })
+
   }
 
   function handleSideStyle() {
@@ -152,7 +129,7 @@ function MessageAudio(props: any) {
             alignItems: "center",
             borderRadius: 10,
             backgroundColor: "rgba(255,255,255,0.2)"
-          }} onPress={eventAudio}>
+          }} onPress={playPause}>
             {handleIcon()}
           </TouchableOpacity>
 
@@ -171,27 +148,36 @@ function MessageAudio(props: any) {
               borderRadius: 100,
               justifyContent: "center",
             }}>
-              <Animated.View style={{
-                width: animatedValue.interpolate({
-                  inputRange: [0, 100],
-                  outputRange: [0, width],
-                  extrapolate: Animated.Extrapolate.CLAMP
-                }), height: 3,
-                backgroundColor: props.received ? "white" : "black",
-                marginLeft: 0,
-                borderRadius: 100,
-                justifyContent: "center",
-              }}>
-                <Animated.View style={{
-                  borderRadius: 100,
+              <Animated.View style={[
+                {
+                  height: 3,
                   backgroundColor: props.received ? "white" : "black",
-                  width: 10.5, height: 10.5,
-                  left: animatedValue.interpolate({
+                  marginLeft: 0,
+                  borderRadius: 100,
+                  justifyContent: "center",
+                },
+                {
+                  width: animatedValue.interpolate({
                     inputRange: [0, 100],
-                    outputRange: [0, sub(width, 5)],
+                    outputRange: [0, width],
                     extrapolate: Animated.Extrapolate.CLAMP
                   })
-                }} />
+                }
+              ]}>
+                <Animated.View style={[
+                  {
+                    borderRadius: 100,
+                    backgroundColor: props.received ? "white" : "black",
+                    width: 10.5, height: 10.5,
+                  },
+                  {
+                    left: animatedValue.interpolate({
+                      inputRange: [0, 100],
+                      outputRange: [0, sub(width, 5)],
+                      extrapolate: Animated.Extrapolate.CLAMP
+                    })
+                  }
+                ]} />
               </Animated.View>
             </View>
             <View>

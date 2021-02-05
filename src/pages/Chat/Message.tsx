@@ -14,8 +14,6 @@ interface Props {
 
 export default function Message(props: Props) {
 
-  console.log(props.file)
-
   if (props.type === "chat")
     return <MessageText {...props} />
 
