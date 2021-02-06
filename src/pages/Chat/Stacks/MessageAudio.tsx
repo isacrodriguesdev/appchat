@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, memo, useMemo, useCallback, Fragment } from 'react'
 import { View, TouchableOpacity, Text, Image, ViewProps, StyleProp, ViewStyle } from 'react-native'
+import { useStateWithCallbackLazy } from "use-state-with-callback"
 // import fs from "react-native-fs"
 // imports
 import styles from '../styles'
@@ -7,7 +8,8 @@ import PlayIcon from "~/components/icons/Play"
 import PauseIcon from "~/components/icons/Pause"
 import colors from '../../../../theme'
 import DateText from '~/components/DateText.tsx'
-import Animated, { Easing, sub, Value } from 'react-native-reanimated'
+import Animated, { Clock, Easing, set, sub, timing, useCode, useValue, Value } from 'react-native-reanimated'
+import { useTiming, withBouncing, } from "react-native-redash"
 import font from '../../../app/font'
 import Loading from '~/components/Loading'
 import moment from 'moment'
@@ -18,12 +20,12 @@ import { Player, Recorder } from "@react-native-community/audio-toolkit"
 
 function MessageAudio(props: any) {
 
-  let player: Player
   let localFile = `${RNFS.DocumentDirectoryPath}/${md5(props.id)}.${props.type.split("/")[1]}`
 
+  const [player, setPlayer] = useState(new Player(localFile))
   const [currentTime, setCurrentTime] = useState(props.file_duration)
   const [width, setWidth] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [playing, setPlaying] = useStateWithCallbackLazy(false)
   const animatedValue = useRef(new Value(0)).current
 
   // sera que era por causa do hash?
@@ -39,49 +41,60 @@ function MessageAudio(props: any) {
     }
   }
 
-  function getCurrentTime(paused: boolean) {
+  function getCurrentTime(playing: boolean) {
 
-    console.log("paused ===", paused)
-
-    if (paused) return
-
-    if (player.isStopped === true) {
-      console.log("terminei", paused, player.isStopped)
-      animatedValue.setValue(0)
+    if (player.isStopped) {
+      // animatedValue.setValue(0)
+      setPlaying(false, () => null)
+      Animated.timing(animatedValue, {
+        duration: 100,
+        toValue: 0,
+        easing: Easing.inOut(Easing.linear),
+      }).start()
+      setPlayer(new Player(localFile))
       setCurrentTime(props.file_duration)
-      setIsPlaying(false)
-      setPlayer()
+      console.log("end")
       return
     }
 
-    // console.log("iniciei", paused, player.isStopped)
+    console.log("playging", playing)
 
-    let seconds = Math.floor(player.currentTime / 1000)
+    if (playing) {
+      console.log("running", playing)
+      let seconds = Math.floor(player.currentTime / 1000)
 
-    Animated.timing(animatedValue, {
-      duration: 300,
-      toValue: ((seconds * 100) / (props.file_duration * 100)) * 100,
-      easing: Easing.linear,
-    }).start(() => {
-      setCurrentTime(seconds)
-      getCurrentTime(paused)
-    })
+      Animated.timing(animatedValue, {
+        duration: 200,
+        toValue: ((seconds * 100) / (props.file_duration * 100)) * 100,
+        easing: Easing.inOut(Easing.linear),
+      }).start(() => {
+        setCurrentTime(seconds)
+        getCurrentTime(playing)
+      })
+      return
+    }
   }
 
-  function setPlayer() {
-    player = new Player(localFile)
-  }
+  // setPlayer(new Player(localFile))
 
   function playPause() {
 
-    if (!player)
-      setPlayer()
+    if (!playing) {
+      setPlaying(true, (current: boolean) => {
+        player.play(() => {
+          getCurrentTime(current)
+        })
+      })
+    } else {
+      setPlaying(false, ()=> null)
+      player.pause(() => null)
+    }
 
-    player.playPause((error, paused) => {
-      console.log(error, paused)
-      getCurrentTime(paused)
-      setIsPlaying(!paused)
-    })
+    // player.playPause(function (error, paused) {
+    //   setPlaying(!playing, (current: boolean) => {
+    //     current === true && getCurrentTime(!paused)
+    //   })
+    // })
 
   }
 
@@ -109,7 +122,7 @@ function MessageAudio(props: any) {
   }
 
   function handleIcon() {
-    if (!isPlaying)
+    if (!playing)
       return <PlayIcon fill={props.received ? "white" : "black"} height={14} width={14} style={{ left: 1 }} />
     else
       return <PauseIcon fill={props.received ? "white" : "black"} height={14} width={14} />

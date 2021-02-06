@@ -55,7 +55,6 @@ export default function AuthProvider({ children }: any) {
         const user: any = await AsyncStorage.getItem("@user")
         const decoded: any = jwtDecode(token)
 
-
         setSocket(
           socketio.connect(getHost(), {
             secure: config.hostSecure,
