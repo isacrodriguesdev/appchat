@@ -65,14 +65,14 @@ function Home(props: Props) {
   const [totalConversations, setTotalConversations] = useState(0)
   const [page, setPage] = useState(0)
   const [movedScroll, setMovedScroll] = useState(false)
-  // const [sound] = useState(
-  //   new Sound('xiomi2.mp3', Sound.MAIN_BUNDLE, (error) => {
-  //     if (error) {
-  //       console.log('failed to load the sound', error);
-  //       return
-  //     }
-  //   })
-  // )
+  const [sound] = useState(
+    new Sound('xiomi2.mp3', Sound.MAIN_BUNDLE, (error) => {
+      if (error) {
+        console.log('failed to load the sound', error);
+        return
+      }
+    })
+  )
   const animatedTabValue = useRef(new Animated.Value(0)).current
   // const animatedModalValue = useRef(new Animated.Value(0)).current
 
@@ -248,10 +248,10 @@ function Home(props: Props) {
         props.setCurrentParticipant(contact, "opened")
         props.addContactInPending(contact)
 
-        // sound.play((success) => {
-        //   if (success)
-        //     sound.stop()
-        // })
+        sound.play((success) => {
+          if (success)
+            sound.stop()
+        })
       }
       // o atendimento foi encerrado pelo atendente ou pelo usuario
       else if (!hasAttendant && !serviceIsOpen) {

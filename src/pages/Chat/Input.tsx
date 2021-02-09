@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   View,
   StyleSheet,
@@ -6,7 +6,6 @@ import {
   Text,
   Vibration
 } from 'react-native'
-import JwtDecode from 'jwt-decode'
 // imports
 import SendIcon from '~/components/icons/Send'
 import ClipIcon from "~/components/icons/Clip"
@@ -16,22 +15,20 @@ import { font } from '../../app'
 // components
 import MaterialIcon from "react-native-vector-icons/MaterialIcons"
 import { connect } from 'react-redux'
-import AsyncStorage from '@react-native-community/async-storage'
 import * as contactActions from '../../store/duck/contacts'
 import * as chatActions from '../../store/duck/chat'
 import { useAuth } from '../../contexts/auth'
 import Loading from '~/components/Loading'
-import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker'
+import DocumentPicker from 'react-native-document-picker'
 import { NavigationProp } from '@react-navigation/native'
-import Sound from 'react-native-sound'
-import RNFetchBlob from "rn-fetch-blob"
 import RNFS from "react-native-fs"
 import { sendMessageFile, sendMessageText } from './actions/message'
 import Permission from "~/app/permissions"
 import md5 from 'md5'
 import AudioRecorderPlayer from 'react-native-audio-recorder-player'
 import Rendering from '~/components/Rendering'
-import Animated, { Extrapolate, interpolate, Value, Easing } from 'react-native-reanimated'
+import Animated, { Extrapolate, Value, Easing } from 'react-native-reanimated'
+import { Recorder } from "@react-native-community/audio-toolkit"
 import {
   PanGestureHandler,
   PanGestureHandlerStateChangeEvent,
@@ -41,8 +38,6 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native-gesture-handler'
 import * as Indicators from 'react-native-indicators';
-import { width } from '~/app/window'
-
 
 interface InputStateProps {
   navigation: NavigationProp<any>

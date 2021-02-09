@@ -130,14 +130,14 @@ function Chat(props: Props) {
   const [modalGetService, setModalGetService] = useState<boolean>(false)
   const [pageLimit, setPageLimit] = useState<number>(10)
   const [pageOffset, setPageOffset] = useState<number>(15)
-  // const [sound, setSound] = useState(function () {
-  //   return new Sound('intuition.mp3', Sound.MAIN_BUNDLE, (error) => {
-  //     if (error) {
-  //       console.log('failed sound MAIN_BUNDLE', error)
-  //       return
-  //     }
-  //   })
-  // })
+  const [sound, setSound] = useState(function () {
+    return new Sound('intuition.mp3', Sound.MAIN_BUNDLE, (error) => {
+      if (error) {
+        console.log('failed sound MAIN_BUNDLE', error)
+        return
+      }
+    })
+  })
 
   function handleBackButtonClick() {
     if (props.imagesOpened)
@@ -206,11 +206,10 @@ function Chat(props: Props) {
   function onSendMessageApp (message: any) {
     props.setMessage(message)
 
-    // sound.play((success) => {
-    //   if (success)
-    //     sound.stop()
-    // })
-
+    sound.play((success) => {
+      if (success)
+        sound.stop()
+    })
   }
 
   const getService = useCallback(function () {

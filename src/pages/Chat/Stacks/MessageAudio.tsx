@@ -1,21 +1,16 @@
-import React, { useEffect, useState, useRef, memo, useMemo, useCallback, Fragment } from 'react'
-import { View, TouchableOpacity, Text, Image, ViewProps, StyleProp, ViewStyle } from 'react-native'
+import React, { useEffect, useState, useRef, Fragment, useMemo } from 'react'
+import { View, TouchableOpacity, Text } from 'react-native'
 import { useStateWithCallbackLazy } from "use-state-with-callback"
-// import fs from "react-native-fs"
 // imports
 import styles from '../styles'
 import PlayIcon from "~/components/icons/Play"
 import PauseIcon from "~/components/icons/Pause"
-import colors from '../../../../theme'
 import DateText from '~/components/DateText.tsx'
-import Animated, { Clock, Easing, set, sub, timing, useCode, useValue, Value } from 'react-native-reanimated'
-import { useTiming, withBouncing, } from "react-native-redash"
-import font from '../../../app/font'
-import Loading from '~/components/Loading'
+import Animated, { Easing, sub, Value } from 'react-native-reanimated'
 import moment from 'moment'
 import md5 from 'md5'
 import RNFS from "react-native-fs"
-import { Player, Recorder } from "@react-native-community/audio-toolkit"
+import { Player } from "@react-native-community/audio-toolkit"
 // components
 
 function MessageAudio(props: any) {
@@ -41,61 +36,47 @@ function MessageAudio(props: any) {
     }
   }
 
-  function getCurrentTime(playing: boolean) {
-
-    if (player.isStopped) {
-      // animatedValue.setValue(0)
-      setPlaying(false, () => null)
-      Animated.timing(animatedValue, {
-        duration: 100,
-        toValue: 0,
-        easing: Easing.inOut(Easing.linear),
-      }).start()
-      setPlayer(new Player(localFile))
-      setCurrentTime(props.file_duration)
-      console.log("end")
-      return
-    }
-
-    console.log("playging", playing)
-
-    if (playing) {
-      console.log("running", playing)
-      let seconds = Math.floor(player.currentTime / 1000)
-
-      Animated.timing(animatedValue, {
-        duration: 200,
-        toValue: ((seconds * 100) / (props.file_duration * 100)) * 100,
-        easing: Easing.inOut(Easing.linear),
-      }).start(() => {
-        setCurrentTime(seconds)
-        getCurrentTime(playing)
-      })
-      return
-    }
+  function finish() {
+    setPlaying(false, () => null)
+    Animated.timing(animatedValue, {
+      duration: 100,
+      toValue: 0,
+      easing: Easing.inOut(Easing.linear),
+    }).start()
+    setPlayer(new Player(localFile))
+    setCurrentTime(props.file_duration)
   }
 
-  // setPlayer(new Player(localFile))
+  function start() {
+    let seconds = Math.floor(player.currentTime / 1000)
+    Animated.timing(animatedValue, {
+      duration: 250,
+      toValue: ((seconds * 100) / (props.file_duration * 100)) * 100,
+      easing: Easing.inOut(Easing.linear),
+    }).start(() => {
+      setCurrentTime(seconds)
+      getCurrentTime()
+    })
+  }
+
+  function getCurrentTime() {
+    if (player.isStopped)
+    finish()
+    else if (player.isPlaying)
+    start()
+    else return
+  }
 
   function playPause() {
-
     if (!playing) {
-      setPlaying(true, (current: boolean) => {
-        player.play(() => {
-          getCurrentTime(current)
-        })
+      setPlaying(true, () => null)
+      player.play(() => {
+        getCurrentTime()
       })
     } else {
-      setPlaying(false, ()=> null)
+      setPlaying(false, () => null)
       player.pause(() => null)
     }
-
-    // player.playPause(function (error, paused) {
-    //   setPlaying(!playing, (current: boolean) => {
-    //     current === true && getCurrentTime(!paused)
-    //   })
-    // })
-
   }
 
   function handleSideStyle() {
@@ -128,7 +109,7 @@ function MessageAudio(props: any) {
       return <PauseIcon fill={props.received ? "white" : "black"} height={14} width={14} />
   }
 
-  // const timer = useMemo(() => moment.utc(moment.duration(currentTime, "seconds").asMilliseconds()).format("m:ss"), [currentTime])
+  const timer = useMemo(() => moment.utc(moment.duration(currentTime, "seconds").asMilliseconds()).format("m:ss"), [currentTime])
 
   return (
     <Fragment>
@@ -200,7 +181,7 @@ function MessageAudio(props: any) {
                 bottom: 1,
                 fontWeight: "500",
               }}>
-                {moment.utc(moment.duration(currentTime, "seconds").asMilliseconds()).format("m:ss")}
+                {timer}
               </Text>
             </View>
 
