@@ -21,7 +21,7 @@ export default function DateText({ date, received }: any) {
     else if (lastDate < days(7))
       return moment(date).locale("pt-br", momentLocalePtBr).format("ddd [ás] HH:mm")
     else
-      return moment(date).locale("pt-br", momentLocalePtBr).format("DD [de] MMM [de] YYYY [ás] hh:mm")
+      return moment(date).locale("pt-br", momentLocalePtBr).format("DD [de] MMM [de] YYYY [ás] HH:mm")
   }, [date])
 
   return (

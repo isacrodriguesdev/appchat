@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
-import { View, Text, Image, Animated, StyleSheet } from 'react-native'
+import { View, Text, Image, Animated, StyleSheet, StyleProp, ViewStyle } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient';
 import { MaterialIcons } from '~/app/icon';
 import Rendering from '~/components/Rendering';
@@ -26,13 +26,13 @@ function MessageText(props: any) {
     ];
   }
 
-  function handleContainerStyle() {
+  function handleContainerStyle(): StyleProp<ViewStyle>[] {
     return [
       props.received ? globalStyle.messageReceivedTextContainer : globalStyle.messageReceivedTextContainer,
       {
         borderRadius: 20,
         backgroundColor: props.received ? "#5d5dd5" : "#ececf3",
-      },
+      }
     ]
   }
 
@@ -63,6 +63,13 @@ function MessageText(props: any) {
             </View>
           </Rendering>
         </View>
+
+        <Rendering render={props.received && props.notice}>
+          <View style={globalStyle.contactAvatar}>
+            <Notice notice={props.notice} received={props.received} />
+          </View>
+        </Rendering>
+
       </View>
     </React.Fragment>
   )

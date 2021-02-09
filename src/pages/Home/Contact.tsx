@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, memo, useState, useMemo } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { View, StyleSheet, Image, Text, TouchableNativeFeedback, TouchableWithoutFeedback } from 'react-native'
 import { font } from '../../app'
 // imports
@@ -12,6 +12,7 @@ import Rendering from '~/components/Rendering'
 import { connect } from 'react-redux'
 import { width } from '../../app/window'
 import Animated, { Easing, Extrapolate } from 'react-native-reanimated'
+import formatNumber from "format-number"
 // actions
 
 function Contact(props: any) {
@@ -42,11 +43,12 @@ function Contact(props: any) {
 
     if (props.user.status === "close") {
       return setMessageStatus({
-        last_message: props.user.number.replace("@c.us", ""),
+        last_message: Message.text,
       })
     }
 
     let properties = props.user.last_message_type && props.user.last_message_type !== "chat" ? { icon: Message.icon } : {}
+
 
     setMessageStatus({
       last_message: Message.text,
@@ -57,7 +59,7 @@ function Contact(props: any) {
 
   useEffect(() => {
 
-    if(props.user.last_message_at)
+    if (props.user.last_message_at)
       formatDateLastMessage()
 
   }, [props.user.last_message_at])
@@ -72,84 +74,77 @@ function Contact(props: any) {
     else
       setLastMessageAt(moment(props.user.last_message_at).format("HH:mm"))
   }
-  // props.user.status === "close" 
-  // props.user.last_message === "@closed_attendment@"
 
-  return useMemo(() => {
-    return (
-      <TouchableNativeFeedback onPress={props.onPress}>
-        <Animated.View
-          style={[styles.container,
-          {
-            opacity: animatedValue.interpolate({
+  return (
+    <TouchableNativeFeedback onPress={props.onPress}>
+      <Animated.View
+        style={[styles.container,
+        {
+          opacity: animatedValue.interpolate({
+            inputRange: [0, width / 2],
+            outputRange: [1, 0],
+            extrapolate: Extrapolate.CLAMP
+          })
+        },
+        {
+          transform: [{
+            translateX: animatedValue.interpolate({
               inputRange: [0, width / 2],
-              outputRange: [1, 0],
+              outputRange: [0, width / 2],
               extrapolate: Extrapolate.CLAMP
             })
-          },
-          {
-            transform: [{
-              translateX: animatedValue.interpolate({
-                inputRange: [0, width / 2],
-                outputRange: [0, width / 2],
-                extrapolate: Extrapolate.CLAMP
-              })
-            }]
-          },
-          ]}>
-          <TouchableWithoutFeedback onPress={() => props.openProfileImage({ show: true, uri: props.user.image })}>
-            <View style={styles.photoContainer}>
-              <Image style={[{ width: "100%", height: "100%" }]}
-                resizeMode="cover"
-                source={{ uri: props.user.image }}
-                borderRadius={200}
-              />
-            </View>
-          </TouchableWithoutFeedback>
-
-          <View style={{ flex: 1 }}>
-
-            <View style={styles.rightItemsContainer}>
-              <View style={styles.nameContainer}>
-                <Text numberOfLines={1} ellipsizeMode="tail" style={styles.nameText}>
-                  {props.user.name}
-                </Text>
-
-                <Text style={styles.lastMessageDateText}>
-                  {lastMessageAt}
-                </Text>
-              </View>
-
-              <View style={styles.bottomItemsContainer}>
-                <View style={styles.lastMessageContainer}>
-                  <Rendering render={props.user.status === "open" && props.user.last_message_type !== "chat"}>
-                    <MaterialIcon name={messageStatus.icon} color="rgba(0,0,30,.30)" size={14} />
-                  </Rendering>
-                  <Text style={styles.lastMessageText} numberOfLines={1} ellipsizeMode="tail">
-                    {messageStatus.last_message}
-                  </Text>
-                </View>
-
-                <Rendering render={props.user.unread_messages && props.user.attendant_id}>
-                  <View style={styles.totalMessagesContainer}>
-                    <View style={styles.totalMessagesCircle}>
-                      <Text style={styles.totalMessagesText}>
-                        {props.user.unread_messages}
-                      </Text>
-                    </View>
-                  </View>
-                </Rendering>
-              </View>
-
-            </View>
+          }]
+        },
+        ]}>
+        <TouchableWithoutFeedback onPress={() => props.openProfileImage({ show: true, uri: props.user.image })}>
+          <View style={styles.photoContainer}>
+            <Image style={[{ width: "100%", height: "100%" }]}
+              resizeMode="cover"
+              source={{ uri: props.user.image }}
+              borderRadius={200}
+            />
           </View>
-        </Animated.View>
-      </TouchableNativeFeedback>
-    )
-  }, [
-    props.user,
-    messageStatus
-  ])
+        </TouchableWithoutFeedback>
+
+        <View style={{ flex: 1 }}>
+
+          <View style={styles.rightItemsContainer}>
+            <View style={styles.nameContainer}>
+              <Text numberOfLines={1} ellipsizeMode="tail" style={styles.nameText}>
+                {props.user.name}
+              </Text>
+
+              <Text style={styles.lastMessageDateText}>
+                {lastMessageAt}
+              </Text>
+            </View>
+
+            <View style={styles.bottomItemsContainer}>
+              <View style={styles.lastMessageContainer}>
+                <Rendering render={props.user.status === "open" && props.user.last_message_type !== "chat"}>
+                  <MaterialIcon name={messageStatus.icon} color="rgba(0,0,30,.30)" size={14} />
+                </Rendering>
+                <Text style={styles.lastMessageText} numberOfLines={1} ellipsizeMode="tail">
+                  {messageStatus.last_message}
+                </Text>
+              </View>
+
+              <Rendering render={props.user.unread_messages && props.user.attendant_id}>
+                <View style={styles.totalMessagesContainer}>
+                  <View style={styles.totalMessagesCircle}>
+                    <Text style={styles.totalMessagesText}>
+                      {props.user.unread_messages}
+                    </Text>
+                  </View>
+                </View>
+              </Rendering>
+            </View>
+
+          </View>
+        </View>
+      </Animated.View>
+    </TouchableNativeFeedback>
+  )
 }
 
 const mapStateToProps = (state: any) => ({});

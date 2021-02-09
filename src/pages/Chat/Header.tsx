@@ -77,6 +77,11 @@ function Header(props: Props) {
               </View>
               <View style={styles.nameAndVisitContainer}>
                 <Text style={[styles.nameText, { color: "black" }]}>{props.participant.name}</Text>
+                <Text style={[{
+                  fontFamily: font.OpenSansSemiBold,
+                  color: "rgba(0,0,0,1)",
+                  fontSize: 12
+                }]}>{props.participant.number.replace("@c.us", "")}</Text>
               </View>
             </View>
           </View>
@@ -127,7 +132,7 @@ function provider() {
 export default compose(
   connect(mapStateToProps, mapDispatchToProps),
   provider()
-)(Header)
+)(memo(Header))
 
 const styles = StyleSheet.create({
   container: {

@@ -15,7 +15,7 @@ import { Player } from "@react-native-community/audio-toolkit"
 
 function MessageAudio(props: any) {
 
-  let localFile = `${RNFS.DocumentDirectoryPath}/${md5(props.id)}.${props.type.split("/")[1]}`
+  const [localFile] = useState(`${RNFS.DocumentDirectoryPath}/${md5(props.id)}.${props.type.split("/")[1]}`)
 
   const [player, setPlayer] = useState(new Player(localFile))
   const [currentTime, setCurrentTime] = useState(props.file_duration)

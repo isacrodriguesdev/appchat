@@ -141,7 +141,7 @@ function MenuOptions(props: Props) {
                   props.setModalEndService(true)
                 }}>
                   <View style={[styles.menuBottomCicleIcon, { backgroundColor: "#ffe6e6" }]}>
-                    <Icon name="cancel-presentation" color="#ff4d4d" size={20} />
+                    <Icon name="close" color="#ff4d4d" size={20} />
                   </View>
                   <Text style={[styles.menuBottomTitle, { color: "#ff4d4d" }]}>Encerrar atendimento</Text>
                 </TouchableOpacity>

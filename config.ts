@@ -12,11 +12,11 @@ export let config = {
   hostSecure: true
 }
 
-// config = {
-//   hostAddr: hosts.NA,
-//   hostPort: 3759,
-//   hostSecure: false
-// }
+config = {
+  hostAddr: hosts.NA,
+  hostPort: 3759,
+  hostSecure: false
+}
 
 export function getHost() {
   return `${config.hostSecure ? "https" : "http"}://${config.hostAddr}:${config.hostPort}`

@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import Toast from "react-native-toast-message"
-import AwesomeAlert from 'react-native-awesome-alerts'
 import { connect } from "react-redux"
 import { View, StyleSheet, Dimensions, TouchableNativeFeedback, ScrollView, TouchableOpacity, Image, TouchableWithoutFeedback, Text, ImageBackground, BackHandler, Modal, Alert } from "react-native"
 import OneSignal from "../../services/notification"

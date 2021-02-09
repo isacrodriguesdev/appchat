@@ -5,12 +5,23 @@ import { MaterialIcons } from "~/app/icon"
 
 function Notice(props: any) {
 
-  if (props.notice === "closed")
+  if (props.notice === "closed_")
     return (
       <View style={styles.menuBottomItemContainer}>
-        {console.log("chat/notice")}
-        <View style={[styles.menuBottomCicleIcon, { backgroundColor: "#eaeafa", }]}>
-          <MaterialIcons name="check-circle-outline" color={colors.primaryColor} size={16} />
+        <View style={[styles.menuBottomCicleIcon, { backgroundColor: "#ffe6e6", },
+        !props.received ? { marginRight: 10 } : { marginLeft: 10 }
+        ]}>
+          <MaterialIcons name="close" color={"#ff4d4d"} size={18} />
+        </View>
+      </View>
+    )
+  else if (props.notice === "closed")
+    return (
+      <View style={styles.menuBottomItemContainer}>
+        <View style={[styles.menuBottomCicleIcon, { backgroundColor: "#eaeafa", },
+        !props.received ? { marginRight: 10 } : { marginLeft: 10 }
+        ]}>
+          <MaterialIcons name="check-circle-outline" color={colors.primaryColor} size={18} />
         </View>
       </View>
     )
@@ -29,8 +40,8 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 100,
-    justifyContent: "center", alignItems: "center",
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#eaeafa",
-    marginRight: 10
   }
 })

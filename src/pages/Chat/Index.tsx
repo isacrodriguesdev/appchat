@@ -39,6 +39,7 @@ import Attendant from './Attendant';
 import Rendering from '~/components/Rendering';
 import MenuOptions from './MenuOptions';
 import { sendMessageText } from './actions/message';
+import { Switch } from 'react-native-gesture-handler';
 
 type Props = StateProps & DispatchProps
 
@@ -54,7 +55,7 @@ interface ListMessagesProps {
   pageOffset: number
 }
 
-function ListMessages(props: ListMessagesProps) {
+const ListMessages = memo(function (props: ListMessagesProps) {
 
   const allowedToPullMessages = useMemo(() => !props.loadingStart && !props.loadingProcess && props.messages.length > props.pageLimit, [
     props.loadingStart,
@@ -99,16 +100,23 @@ function ListMessages(props: ListMessagesProps) {
             received: item.sender !== "client"
           }
 
-          if (item.message === "@closed_attendment@")
-            return <Message {...item} notice="closed" message="Atendimento concluído" />
-          else
-            return <Message {...item} />
+          switch (item.message) {
+            case "@response_close_attendance@":
+              return <Message {...item} notice="closed" message="Atendimento encerrado" />
+            case "@attendant_get_attendance@":
+              return <Message {...item} notice="closed" message="Você encerrou o atendimento" />
+            default:
+              return <Message {...item} />
+          }
+          
         }
+
         else return null
       }}
     />
   )
 }
+)
 
 
 function Chat(props: Props) {
@@ -203,7 +211,7 @@ function Chat(props: Props) {
 
   }, [])
 
-  function onSendMessageApp (message: any) {
+  function onSendMessageApp(message: any) {
     props.setMessage(message)
 
     sound.play((success) => {
@@ -239,7 +247,7 @@ function Chat(props: Props) {
     sendMessageText({
       context,
       currentParticipant
-    }).boot("@get_attendance@")
+    }).boot("@attendant_get_attendance@")
   }, [])
 
   function getProviderAttendanceTake() {
@@ -257,7 +265,9 @@ function Chat(props: Props) {
     setOpenedOptionsMenu(true)
   }
 
-  const endService = useCallback(function () {
+  const endService = function () {
+
+    let currentParticipant = props.route.params.participant
 
     setModalEndService(false)
 
@@ -284,7 +294,13 @@ function Chat(props: Props) {
       unread_messages: 0,
       status: "close"
     })
-  }, [])
+
+    sendMessageText({
+      context,
+      currentParticipant
+    }).boot("@attendant_close_attendance@")
+
+  }
 
   const changeDepartmentService = useCallback(function (item: any) {
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import {
   View,
   StyleSheet,
@@ -28,7 +28,6 @@ import md5 from 'md5'
 import AudioRecorderPlayer from 'react-native-audio-recorder-player'
 import Rendering from '~/components/Rendering'
 import Animated, { Extrapolate, Value, Easing } from 'react-native-reanimated'
-import { Recorder } from "@react-native-community/audio-toolkit"
 import {
   PanGestureHandler,
   PanGestureHandlerStateChangeEvent,
@@ -38,6 +37,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native-gesture-handler'
 import * as Indicators from 'react-native-indicators';
+
 
 interface InputStateProps {
   navigation: NavigationProp<any>
@@ -60,10 +60,6 @@ function Input(props: Props) {
   const animatedRecorderMicPositionValue = useRef(new Value(0)).current
 
   const context = useAuth()
-
-  // const [dataDocumentProvider, setDataDocumentProvider] = useState<DocumentPickerResponse>({} as DocumentPickerResponse)
-  // const [openedDocumentProvider, setOpenedDocumentProvider] = useState<boolean>(false)
-  // const [openedImageProvider, setOpenedImageProvider] = useState<boolean>(false)
 
   const [recorderDuration, setRecorderDuration] = useState({
     recordSecs: 0,
@@ -209,7 +205,6 @@ function Input(props: Props) {
     }).start(() => {
       if (value === 0)
         setRecorderStarted(false)
-      // setRecorderStarted(true)
     })
   }
 
@@ -278,8 +273,6 @@ function Input(props: Props) {
         </View>
       )
   }
-
-  // console.log("chat/input")
 
   if (props.currentParticipant.serviceStatus === "provided")
     return (
@@ -450,7 +443,7 @@ const mapDispatchToProps = {
 }
 
 // @ts-ignore
-export default connect(mapStateToProps, mapDispatchToProps)(Input)
+export default connect(mapStateToProps, mapDispatchToProps)(memo(Input))
 
 const styles = StyleSheet.create({
   microphoneAndSentContainer: {
@@ -470,9 +463,6 @@ const styles = StyleSheet.create({
     elevation: 20
   },
 
-
-
-
   entryTextAndClipContainer: {
     backgroundColor: "#f7f7f8",
     paddingHorizontal: 12,
@@ -485,11 +475,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flex: 1
   },
-
-
-
-
-
 
   inputText: {
     flex: 1,
